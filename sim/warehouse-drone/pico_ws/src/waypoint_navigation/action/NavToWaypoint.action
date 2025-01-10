@@ -1,0 +1,9 @@
+geometry_msgs/Pose waypoint
+int32 which_path
+---
+int32 hov_time
+bool path_reached
+---
+geometry_msgs/PoseStamped current_waypoint
+bool on_path
+

@@ -1,0 +1,46 @@
+	def publish_filtered_data(self, roll, pitch, throttle):
+
+		self.cmd.rc_throttle = int(throttle)
+		self.cmd.rc_roll = int(roll)
+		self.cmd.rc_pitch = int(pitch)
+		self.cmd.rc_yaw = int(1500)
+
+
+		# BUTTERWORTH FILTER low pass filter
+		span = 15
+		for index, val in enumerate([roll, pitch, throttle]):
+			CMD[index].append(val)
+			if len(CMD[index]) == span:
+				CMD[index].pop(0)
+			if len(CMD[index]) != span-1:
+				return
+			order = 3 # determining order 
+			fs = 30 # to keep in order same as hz topic runs
+			fc = 4 
+			nyq = 0.5 * fs
+			wc = fc / nyq
+			b, a = scipy.signal.butter(N=order, Wn=wc, btype='lowpass', analog=False, output='ba')
+			filtered_signal = scipy.signal.lfilter(b, a, CMD[index])
+			if index == 0:
+				self.cmd.rc_roll = int(filtered_signal[-1])
+			elif index == 1:
+				self.cmd.rc_pitch = int(filtered_signal[-1])
+			elif index == 2:
+				self.cmd.rc_throttle = int(filtered_signal[-1])
+    
+			print("THROTTLE", self.cmd.rc_throttle)
+			print("roll", self.cmd.rc_roll)
+			print("pitch", self.cmd.rc_pitch)
+
+			print("THROTTLE2", self.cmd.rc_throttle)
+			print("roll2", self.cmd.rc_roll)
+			print("pitch2", self.cmd.rc_pitch)
+
+		print("publising")
+		print(self.cmd.rc_throttle)
+		print(self.cmd.rc_pitch)
+		print(self.cmd._rc_roll)
+		# self.command_pub.publish(self.cmd)
+		print("publised")	
+  		
+		return [self.cmd.rc_roll, self.cmd.rc_pitch, self.cmd.rc_throttle, 0]
